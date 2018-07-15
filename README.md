@@ -5,5 +5,8 @@ The project will also create a load balancer that will round robin between the 2
 
 # Pre-requists
 
-You need to install and configure ansible and boto (phthon lib)
+If you do not have pip installed, install it 
+,,,,
+sudo apt install python-pip
+,,,,
 
