@@ -27,4 +27,14 @@ aws_access_key_id = YOUR_ACCESS_KEY
 aws_secret_access_key =  YOUR_SECRET_KEY
 ````
 
+## Run the play book.
+cd into the project and run the playbook
+````
+ansible-playbook -i hosts webApp.yml
+````
+
+After a few minutes, you should see two ec2 instances in the AWS console.  
+Under the loadbalancer section, you should see a load balancer with the name WebAppLB. This will round robin between the two ec2 instances.  
+
+
 
