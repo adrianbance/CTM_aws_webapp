@@ -1,0 +1,10 @@
+---
+ - hosts: localhost
+   connection: local
+   gather_facts: false
+   user: root
+   pre_tasks:
+    - include_vars: webApp_vars/CTMWebApp.yml
+   roles:
+    - webApp
+

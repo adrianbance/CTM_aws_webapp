@@ -9,3 +9,22 @@ You can install pip (on Ubuntu) via the below command.
 ```
 sudo apt install python-pip
 ```
+Now pip is installed, you can install boto (an api to AWS)
+```
+sudo pip install boto
+sudo pip install boto3
+```
+Now install ansible
+```
+sudo apt install ansible
+```
+
+### Configure boto
+create a .boto file in your home dir and add your aws access key and secret.
+````
+[Credentials]
+aws_access_key_id = YOUR_ACCESS_KEY
+aws_secret_access_key =  YOUR_SECRET_KEY
+````
+
+

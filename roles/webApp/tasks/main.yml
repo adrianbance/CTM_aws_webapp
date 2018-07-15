@@ -1,0 +1,69 @@
+---
+ - name: Create WebApp security group
+   local_action:
+     module: ec2_group
+     name: WebApp FireWall 
+     description: CTM Firewall - allow HTTP
+     region: "{{ ec2_region }}" 
+     rules:
+       - proto: tcp
+         from_port: 80
+         to_port: 80
+         cidr_ip: 0.0.0.0/0
+     rules_egress:
+       - proto: all
+         cidr_ip: 0.0.0.0/0
+   register: WebAppfirewall
+
+ - name: Create webAppKey EC2 key
+   ec2_key:
+     name: webAppKey
+     region: "{{ ec2_region }}"
+   register: ec2_key_result
+ 
+ - name: Save webAppKey locally
+   copy: content="{{ ec2_key_result.key.private_key }}" dest="./webAppKey.pem" mode=0600
+   when: ec2_key_result.changed
+
+ - name: Build WebApp Server
+   local_action:
+     module: ec2
+     key_name:  "webAppKey"
+     group_id: "{{ WebAppfirewall.group_id }}"
+     instance_type: "{{ ec2_instance_type }}"
+     image: "{{ ec2_image }}"
+     region: "{{ ec2_region }}"
+     user_data: |
+       #!/bin/bash 
+       yum install httpd -y
+       ec2-metadata -i > /var/www/html/index.html
+       systemctl enable httpd.service
+       systemctl start httpd.service
+     wait: true
+     count: 2 
+   register: ec2
+
+ - name: MyLB
+   local_action:
+    module: ec2_elb_lb
+    name: "WebAppLB"
+    state: present
+    instance_ids: '{{ ec2.instance_ids|join(",") }}'  
+    region: "{{ ec2_region }}"
+    security_group_ids: "{{ WebAppfirewall.group_id }}" 
+    zones:
+      - ap-southeast-2a
+      - ap-southeast-2b
+      - ap-southeast-2c
+    listeners:
+      - protocol: http
+        load_balancer_port: 80
+        instance_port: 80
+    health_check:
+        ping_protocol: http # options are http, https, ssl, tcp
+        ping_port: 80
+        ping_path: "/index.html" # not required for tcp or ssl
+        response_timeout: 2 # seconds
+        interval: 10 # seconds
+        unhealthy_threshold: 2
+        healthy_threshold: 2
